@@ -141,6 +141,7 @@ angular.module("artevisualsoft").controller("artevisualsoftCtrl", function ($sco
         $scope.totalItens = 0;
         $scope.totalItemSacola = $scope.vendaItens.reduce(function (accumulador, total) {return accumulador + parseFloat(total.total);}, 0);
         $scope.totalItens = $scope.vendaItens.reduce(function (accumulador, total) {return accumulador + parseFloat(total.qts);}, 0);
+        console.log()
     }
 
     $scope.addItemVenda = function(){
@@ -360,7 +361,8 @@ angular.module("artevisualsoft").controller("artevisualsoftCtrl", function ($sco
 
                     $scope.vendaItens.push({
                         item:item,
-                        idProd: vendas_condicional[i].id,
+                        id: vendas_condicional[i].id,
+                        idProd: vendas_condicional[i].idproduto,
                         produto: vendas_condicional[i].descricao + ' ' + vendas_condicional[i].descricaograde,
                         qts:vendas_condicional[i].quantidade,
                         desc: vendas_condicional[i].descontoporcentagem,
@@ -395,28 +397,125 @@ angular.module("artevisualsoft").controller("artevisualsoftCtrl", function ($sco
 
     //finalizar venda 
 
+    $scope.venda = [];
     $scope.finalizarVenda = function(){
        
         if($scope.vendaItens.length == 0){
             swal("Aviso!", "Caixa não possui item", "info");
         }else{
+            $scope.valorTotalRestante = $scope.totalItemSacola;
+            $scope.totalPagar = $scope.totalItemSacola
             $("#finalizar_venda").modal("show");
         }
     }
+
+    $scope.parcelas = 0;
     $scope.forma_pagamento=[];
+
     $scope.getFormaPagamentoTipo = function(f_pagamento){
-        //$scope.urlBase
         if(f_pagamento != undefined){
 
             aguarde();
             $http.get($scope.urlBase+'/services/formaPagamento?buscar=s&id='+f_pagamento).then(function(response) {
                 $scope.forma_pagamento = response.data;
+                $scope.parcelas = 0;
             }, function(err) {
                 console.log(err);
             });
             aguarde();
         }
     }
+
+    $scope.setParcelamentoVezes = function(parcela){
+        $scope.parcelas = parcela;
+    }
+
+    $scope.confirmar = false;
+    $scope.setFormaDePagamento = [];
+    $scope.disabledInputValor = false;
+    $scope.totalPago = 0 ;
+
+    $scope.confirmarFormaPagamento = function(){
+        
+        var ValorPago = $('#valorTotalRestante').val();
+        
+        ValorPago =  ValorPago.replace('R','');
+        ValorPago = ValorPago.replace('$','');
+        ValorPago = ValorPago.replace(',','.');
+
+        if($scope.valorTotalRestante > 0){
+
+            if($scope.parcelas == 0){   
+                $scope.parcelas = 1;
+            }
+            $scope.totalItemSacola -= ValorPago;
+            $scope.valorTotalRestante = $scope.totalItemSacola;
+            $scope.confirmar = true;
+
+            $scope.valorTotalRestante < 0 ? $scope.valorTotalRestante = 0 : null
+            $scope.valorTotalRestante == 0 ?  $scope.disabledInputValor = true :  $scope.disabledInputValor = false
+
+            $scope.setFormaDePagamento.push({
+                id : $scope.forma_pagamento[0].id,
+                formaPagamento : $scope.forma_pagamento[0].descricao,
+                fotmaPagamentoSG : $scope.forma_pagamento[0].sigla,
+                parcela : $scope.parcelas,
+                valor : Number(ValorPago)
+            })
+
+            $scope.totalPago = $scope.setFormaDePagamento.reduce(function (accumulador, total) {return accumulador + parseFloat(total.valor);}, 0)
+        }
+        
+    }
+
+    $scope.removerFormaPagamento = function(pagamento){
+        var index =  $scope.setFormaDePagamento.indexOf(pagamento)
+        $scope.totalItemSacola += pagamento.valor
+        $scope.valorTotalRestante = $scope.totalItemSacola;
+        $scope.setFormaDePagamento.splice(index, 1);
+        
+        $scope.valorTotalRestante == 0 ?  $scope.disabledInputValor = true :  $scope.disabledInputValor = false
+        $scope.totalPago = $scope.setFormaDePagamento.reduce(function (accumulador, total) {return accumulador + parseFloat(total.valor);}, 0)
+    }
+
+    $scope.return = []
+    $scope.concluirVenda = function(){
+        //aguarde();
+
+        var caixa = $scope.caixa;
+        var cliente = $scope.cliente_pdv;
+        var vendaItens = $scope.vendaItens;
+        var idVenda = $scope.idVenda;
+        var totalItemSacola = $scope.totalItemSacola;
+        var totalItens =  $scope.totalItens;
+        var formaPagamento =  $scope.setFormaDePagamento;
+        var totalPago = $scope.totalPago;
+        var totalPagar = $scope.totalPagar;
+
+        $http({
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json',
+            },
+            data: JSON.stringify({
+                caixa  : caixa,
+                cliente : cliente,
+                idVenda : idVenda,
+                vendaItens : vendaItens,
+                totalItemSacola : totalItemSacola,
+                totalItens : totalItens,
+                formaPagamento : formaPagamento,
+                totalPagar : totalPagar,
+                totalPago : totalPago
+            }),
+            url: $scope.urlBase + '/services/finalizarVenda'
+        }).then(function onSuccess(response){
+            $scope.return = response.data;
+        }).catch(function onError(response){
+
+        })
+    }
+    
 
 }).directive('ngEnter', function () {
     return function (scope, element, attrs) {

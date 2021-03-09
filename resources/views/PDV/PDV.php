@@ -86,6 +86,9 @@
         include_once ('modal/finalizar_venda.php');
     ?>
 
+    <?php
+        include_once ('modal/venda_finalizada.php');
+    ?>
     
 
 <nav class="navbar navbar-static-top" style="background-color: #2E4DD4">
@@ -498,6 +501,14 @@ $(document).ready(function() {
         }
 
     })
+    $("#valorTotalRestante").mask("#.##0.00", { reverse: true });
+
+    $("#valorTotalRestante").keydown(function(){
+        $('#valorTotalRestante').mask("#.##0.00", { reverse: true });
+    });
+    $("#valorTotalRestante").focus(function(){
+        $('#valorTotalRestante').mask("#.##0.00", { reverse: true });
+    });
 
     //produto
     var produto = [
@@ -622,6 +633,7 @@ $( "#cliente_pdv" ).autocomplete({
     
     
     $("#valor").mask("R$ 9999.99");
+   
     
     
     $("#desconto").mask("000.00");

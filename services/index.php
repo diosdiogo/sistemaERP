@@ -53,3 +53,10 @@ if($route[3] == 'formaPagamento'){
 if(substr($route[3], 0, strpos($route[3], '?')) == 'formaPagamento'){
     include_once ('formaPagamento.php');
 }
+
+if($route[3] == 'finalizarVenda'){
+    include_once ('finalizarVenda.php');
+}
+if(substr($route[3], 0, strpos($route[3], '?')) == 'finalizarVenda'){
+    include_once ('finalizarVenda.php');
+}

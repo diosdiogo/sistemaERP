@@ -2,6 +2,7 @@
     include_once('./config.php');
     include_once("../conn.php");
     include_once("ip.php");
+    include_once('./gerarNumeroDocumento.php');
 
     date_default_timezone_set('America/Bahia');
 
@@ -48,21 +49,23 @@
 
         if($dados['idVenda'] == 0){
 
+            $documento = setNumeroDocumento($pdo, $_SESSION['empresa']['matriz']);
+            
             $sqlSalvarVenda = "INSERT INTO venda (idmatriz, idempresa, doc, numeroorcamento, orcamento, descricao, datavenda, idpessoa, valortotal, created_at, faturado, canc) 
                                                         VALUES (?, ?, ?, ?, 1, 'VENDA DE MERCADORIA', ?, ?, ?, ?, 'N', 'N');";
             $stmtSalvarVenda= $pdo->prepare($sqlSalvarVenda);
-            $stmtSalvarVenda->execute([$_SESSION['empresa']['matriz'], $_SESSION['empresa']['id'], $doc, $cod, $data, $cliente , $dados['valorTotal'], $data]);
+            $stmtSalvarVenda->execute([$_SESSION['empresa']['matriz'], $_SESSION['empresa']['id'], $documento, $cod, $data, $cliente , $dados['valorTotal'], $data]);
 
             $error = $stmtSalvarVenda->errorInfo();
 
             $buscarVenda =$pdo->prepare("SELECT * FROM venda where idempresa = :empresa and doc = :doc;");
             $buscarVenda->bindValue(":empresa", $_SESSION['empresa']['id']);
-            $buscarVenda->bindValue(":doc", $doc);
+            $buscarVenda->bindValue(":doc", $documento);
 
             $buscarVenda->execute();
             $rowBuscarVenda = $buscarVenda->fetchAll(PDO::FETCH_ASSOC);
 
-            //  echo '<pre>';
+            // echo '<pre>';
             // print_r($rowBuscarVenda);
             // echo '</pre>';
 

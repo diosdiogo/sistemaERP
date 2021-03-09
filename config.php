@@ -4,7 +4,7 @@
 
     if($producao == false){
         $url = '/sistemaErp';
-        $apiServe = 'http://localhost/sistemaErp';
+        $apiServe = 'http://localhost:8080/sistemaErp';
     }
     else if($producao == true){
         $apiServe;

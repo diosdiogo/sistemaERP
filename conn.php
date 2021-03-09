@@ -53,15 +53,15 @@ abstract class database{
 
 
 
-    // $localhost = "127.0.0.1";
-    // $user = "root";
-    // $pass = "root";
-    // $banco = "artevi12_erp_cdl";
-
-    $localhost = "ns210.hostgator.com.br";
-    $user = "artevi12";
-    $pass = "B66o6hxsF7";
+    $localhost = "127.0.0.1";
+    $user = "root";
+    $pass = "root";
     $banco = "artevi12_erp_cdl";
+
+    // $localhost = "ns210.hostgator.com.br";
+    // $user = "artevi12";
+    // $pass = "B66o6hxsF7";
+    // $banco = "artevi12_erp_cdl";
 
 
     $con = mysqli_connect($localhost,$user,$pass,$banco);
